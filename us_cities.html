@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: U.S. Cities</title>
+		<script type="text/javascript" src="d3/d3.v3.js"></script>
+		<style type="text/css"></style>
+	</head>
+	<body>
+		<script type="text/javascript">
+			//Width and height
+			var w = 750;
+			var h = 450;
+			var scale = 750;
+
+			//Define map projection
+			var projection = d3.geo.albersUsa()
+								   .translate([w/2, h/2])
+								   .scale([scale]);
+
+			//Define path generator
+			var path = d3.geo.path().projection(projection);
+
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			//Load in GeoJSON data
+			d3.json("us-states.json", function(json) {
+				//Bind data and create one path per GeoJSON feature
+				svg.selectAll("path")
+				   .data(json.features)
+				   .enter()
+				   .append("path")
+				   .attr("d", path)
+				   .style("fill", "#666");
+				   
+				//Load in cities data
+				d3.csv("us-cities.csv", function(data) {
+					svg.selectAll("circle")
+					   .data(data)
+					   .enter()
+					   .append("circle")
+					   .attr("cx", function(d) {
+						   return projection([d.lon, d.lat])[0];
+					   })
+					   .attr("cy", function(d) {
+						   return projection([d.lon, d.lat])[1];
+					   })
+					   .attr("r", function(d) {
+							return Math.sqrt(parseInt(d.population) * 0.00004);
+					   })
+					   .style("fill", "yellow")
+					   .style("opacity", 0.75)
+					   .append("title")
+					   .text(function(d){
+							return d.place + ": " + d.population;
+					   });
+				});
+			});
+		</script>
+	</body>
+</html>
